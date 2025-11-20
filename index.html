@@ -380,50 +380,107 @@ h1 { font-size: 2.5em; margin-top: 25px; color: #00c6ff; }
 <script>
 /* ------------------------ BADGE SYSTEM ------------------------ */
 
+/* ------------------------ TIME BADGES + CLAIM SYSTEM ------------------------ */
+
 let totalSeconds = parseInt(localStorage.getItem("totalSeconds") || "0");
 
-/* BADGE DESCRIPTIONS (time in seconds) */
-const timeBadges = {
-  ach60: 60,
-  ach300: 300,
-  ach600: 600,
-  ach1800: 1800,
-  ach3600: 3600,
-  ach7200: 7200,
-  ach18000: 18000,
-  ach36000: 36000,
-  ach86400: 86400,
-  ach259200: 259200,
-  ach604800: 604800,
-  ach1209600: 1209600,
-  ach2592000: 2592000,
-  ach7776000: 7776000
+/* Time requirements */
+const timeRequirements = {
+  "60s": 60,
+  "300s": 300,
+  "600s": 600,
+  "1800s": 1800,
+  "3600s": 3600,
+  "7200s": 7200,
+  "18000s": 18000,
+  "36000s": 36000,
+  "86400s": 86400,
+  "259200s": 259200,
+  "604800s": 604800,
+  "1209600s": 1209600,
+  "2592000s": 2592000,
+  "7776000s": 7776000
 };
 
+/* EXP rewards */
+const badgeRewards = {
+  "60s": 100,
+  "300s": 150,
+  "600s": 250,
+  "1800s": 400,
+  "3600s": 600,
+  "7200s": 800,
+  "18000s": 1200,
+  "36000s": 1800,
+  "86400s": 2500,
+  "259200s": 4000,
+  "604800s": 8000,
+  "1209600s": 12000,
+  "2592000s": 20000,
+  "7776000s": 40000
+};
+
+/* Load claimed badges */
+let claimedBadges = JSON.parse(localStorage.getItem("claimedBadges") || "{}");
+
+/* Unlock badges visually */
 function updateBadges() {
-  for (const id in timeBadges) {
-    const el = document.getElementById(id);
-    if (!el) continue;
+  document.querySelectorAll(".badge").forEach(badge => {
+    const ach = badge.querySelector(".claimBtn").dataset.ach;
+    const btn = badge.querySelector(".claimBtn");
 
-    if (totalSeconds >= timeBadges[id]) {
-      el.classList.add("unlocked");
+    // unlock requirement met
+    if (totalSeconds >= timeRequirements[ach]) {
+      badge.classList.add("unlocked");
 
-      if (!el.innerHTML.includes("✔")) {
-        el.innerHTML += "<br>✔";
+      if (!claimedBadges[ach]) {
+        btn.classList.remove("locked");
+        btn.innerText = "Claim";
       }
     }
-  }
+
+    // already claimed
+    if (claimedBadges[ach]) {
+      btn.classList.add("claimed");
+      btn.innerText = "Claimed ✔";
+    }
+  });
 }
 
-function toggleAch() {
-  document.getElementById("achPanel").classList.toggle("open");
+/* Claim handler */
+function setupClaimButtons() {
+  document.querySelectorAll(".claimBtn").forEach(btn => {
+    const ach = btn.dataset.ach;
+
+    btn.addEventListener("click", () => {
+      if (claimedBadges[ach]) return; // already claimed
+
+      if (totalSeconds < timeRequirements[ach]) return; // not unlocked
+
+      // Add EXP
+      exp = clampToMaxExp(exp + badgeRewards[ach]);
+      updateUI();
+
+      // Mark as claimed
+      claimedBadges[ach] = true;
+      localStorage.setItem("claimedBadges", JSON.stringify(claimedBadges));
+
+      btn.classList.add("claimed");
+      btn.innerText = "Claimed ✔";
+    });
+  });
 }
 
+/* Timer */
 setInterval(() => {
   totalSeconds++;
   localStorage.setItem("totalSeconds", totalSeconds);
   updateBadges();
 }, 1000);
+
+setupClaimButtons();
+updateBadges();
+
 
 /* DISPLAY TIME THAT SAVES */
 let displaySec = parseInt(localStorage.getItem("displaySec") || "0");
