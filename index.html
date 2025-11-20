@@ -1,1 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Level System</title>
+
+<!-- POPPINS EXTRABOLD FONT -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@800&display=swap" rel="stylesheet">
+
+<style>
+/* GLOBAL FONT */
+body, * {
+  font-family: 'Poppins', sans-serif !important;
+  font-weight: 800 !important;
+}
+
+/* BACKGROUND + LAYOUT */
+body {
+  background: linear-gradient(to bottom, #002b80, #0044cc, #0066ff);
+  color: #ffffff;
+  text-align: center;
+  padding-top: 50px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* WHITE STAR SHAPES */
+.star {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: white;
+  clip-path: polygon(
+      50% 0%,
+      61% 35%,
+      98% 35%,
+      68% 57%,
+      79% 91%,
+      50% 70%,
+      21% 91%,
+      32% 57%,
+      2% 35%,
+      39% 35%
+  );
+  filter: drop-shadow(0 0 6px white);
+  opacity: 0.9;
+}
+
+.star:nth-child(1) { top: 10%; left: 15%; transform: scale(0.8); }
+.star:nth-child(2) { top: 25%; left: 70%; transform: scale(1.1); }
+.star:nth-child(3) { top: 40%; left: 30%; transform: scale(0.6); }
+.star:nth-child(4) { top: 55%; left: 85%; transform: scale(1.3); }
+.star:nth-child(5) { top: 75%; left: 20%; transform: scale(1.0); }
+.star:nth-child(6) { top: 12%; left: 80%; transform: scale(0.7); }
+.star:nth-child(7) { top: 90%; left: 60%; transform: scale(1.2); }
+.star:nth-child(8) { top: 65%; left: 45%; transform: scale(0.9); }
+
+/* TIMER BOX */
+#timeSpent {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  padding: 10px 16px;
+  background: rgba(0, 0, 0, 0.45);
+  color: white;
+  font-size: 16px;
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  box-shadow: 0 0 8px rgba(255,255,255,0.4);
+}
+
+/* ACHIEVEMENTS BUTTON */
+#achButton {
+  position: fixed;
+  left: 15px;
+  top: 15px;
+  padding: 12px 18px;
+  background: #ffdd57;
+  color: black;
+  border-radius: 8px;
+  cursor: pointer;
+  z-index: 10000;
+}
+
+/* FULL SCREEN ACHIEVEMENT PANEL */
+#achPanel {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 40px 20px;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s;
+  z-index: 9999;
+}
+
+#achPanel.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#achPanel h2 {
+  font-size: 2.5em;
+  margin-bottom: 25px;
+  text-shadow: 0 0 10px white;
+}
+
+/* BADGE GRID */
+#badgeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 18px;
+  width: 95%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* BADGES */
+.badge {
+  padding: 20px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 14px;
+  font-size: 1.2em;
+  color: white;
+  text-shadow: 0 0 8px rgba(255,255,255,0.5);
+  transition: 0.3s;
+  border: 3px solid rgba(255,255,255,0.2);
+}
+
+.badge span {
+  display: block;
+  margin-top: 10px;
+  opacity: 0.85;
+  font-size: 0.8em;
+}
+
+/* UNLOCKED BADGE */
+.badge.unlocked {
+  background: #00ff99;
+  color: black;
+  border-color: #00ff99;
+  box-shadow: 0 0 18px #00ff99;
+  text-shadow: none;
+}
+
+/* LEVEL UI */
+h1 { font-size: 2.5em; margin-top: 25px; color: #00c6ff; }
+.level-info { font-size: 1.5em; margin-bottom: 10px; }
+.title-info { font-size: 1.2em; color: #ffdd57; margin-bottom: 25px; }
+
+.progress-container {
+  width: min(90%, 600px);
+  height: 40px;
+  background-color: #1a1a2e;
+  border-radius: 20px;
+  margin: 0 auto;
+  overflow: hidden;
+  box-shadow: 0 0 10px #00c6ff;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(to right, #00c6ff, #0072ff);
+  border-radius: 20px;
+  line-height: 40px;
+  color: #fff;
+  transition: width 0.5s ease-in-out;
+}
+
+.exp-text, .countdown {
+  margin-top: 10px;
+  font-size: 1.1em;
+  color: #a0d8ef;
+}
+
+.countdown { margin-top: 20px; color: #66d9ff; }
+
+.code-message { margin-top: 10px; color: #ffdd57; transition: 0.5s; }
+.muted { opacity: 0.6; pointer-events: none; }
+
+/* LEVEL UP POPUP */
+#levelUpPopup {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #00ff99;
+  color: black;
+  padding: 20px 40px;
+  font-size: 1.5em;
+  border-radius: 12px;
+  box-shadow: 0 0 20px #00ff99;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s;
+  z-index: 10001;
+}
+</style>
+</head>
+
+<body>
+
+<!-- TIMER -->
+<div id="timeSpent">Time on site: 0s</div>
+
+<!-- ACHIEVEMENTS BUTTON -->
+<div id="achButton" onclick="toggleAch()">🏆 Achievements</div>
+
+<!-- ACHIEVEMENT PANEL -->
+<div id="achPanel">
+  <h2>🏆 Time Badges</h2>
+
+  <div id="badgeGrid">
+
+  <div id="ach60s" class="badge">✨👶 Sparkling Newborn<br><span>1 Minute</span></div>
+  <div id="ach300s" class="badge">🌙👶 Tiny Time Wanderer<br><span>5 Minutes</span></div>
+  <div id="ach600s" class="badge">⭐👶 Little Starlight Crawler<br><span>10 Minutes</span></div>
+  <div id="ach1800s" class="badge">⏳👶 Half-Hour Hatchling<br><span>30 Minutes</span></div>
+
+  <div id="ach3600s" class="badge">🕰👶 Hour-Born Baby<br><span>1 Hour</span></div>
+  <div id="ach7200s" class="badge">💠👶 Double-Hour Crystal Baby<br><span>2 Hours</span></div>
+  <div id="ach18000s" class="badge">🔮👶 Arcane Time Infant<br><span>5 Hours</span></div>
+  <div id="ach36000s" class="badge">🌌👶 Cosmic Time Baby<br><span>10 Hours</span></div>
+
+  <div id="ach86400s" class="badge">🪽👶 Daylight Aura Child<br><span>1 Day</span></div>
+  <div id="ach259200s" class="badge">🌅👶 Triple-Dawn Baby<br><span>3 Days</span></div>
+
+  <div id="ach604800s" class="badge">🪐👶 Weekborn Star Baby<br><span>1 Week</span></div>
+  <div id="ach1209600s" class="badge">🌠👶 Duo-Comet Baby<br><span>2 Weeks</span></div>
+
+  <div id="ach2592000s" class="badge">🌀👶 Chrono Aura Baby<br><span>1 Month</span></div>
+  <div id="ach7776000s" class="badge">🌟👶 Eternity-Touched Baby<br><span>3 Months</span></div>
+
+</div>
+
+</div>
+
+<!-- STARS -->
+<div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div>
+<div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div>
+
+<!-- TITLE -->
+<h1>🌟👶Aurababy Leveling System👶🌟</h1>
+<div class="level-info">Level: <span id="level">0</span></div>
+<div class="title-info" id="title">🍼 Title: None Yet</div>
+
+<!-- PROGRESS BAR -->
+<div class="progress-container">
+  <div class="progress-bar" id="expBar">0%</div>
+</div>
+
+<div class="exp-text">EXP: <span id="exp">0</span> / <span id="nextExp">100</span></div>
+<div class="countdown" id="countdown">Next EXP in: 60 seconds</div>
+
+<!-- CODE SYSTEM -->
+<div class="code-redeem" id="codeSection">
+  <input type="text" id="codeInput" placeholder="Enter code">
+  <button id="redeemBtn" onclick="redeemCode()">Redeem Code</button>
+  <div id="codeMessage" class="code-message"></div>
+</div>
+
+<!-- LEVEL REWARDS -->
+<div class="level-rewards">
+  <h2>🎁 Level Rewards</h2>
+  <ul id="rewardList" style="list-style:none; padding:0;">
+    <li data-level="25">🔒 Level 25 Reward: ???</li>
+    <li data-level="50">🔒 Level 50 Reward: ???</li>
+    <li data-level="75">🔒 Level 75 Reward: ???</li>
+    <li data-level="100">🔒 Level 100 Reward: ???</li>
+  </ul>
+</div>
+
+<!-- LEVEL UP POPUP -->
+<div id="levelUpPopup">🎉 Level Up! 🎉</div>
+
+<script>
+/* ------------------------ BADGE SYSTEM ------------------------ */
+
+let totalSeconds = parseInt(localStorage.getItem("totalSeconds") || "0");
+
+/* BADGE DESCRIPTIONS (time in seconds) */
+const timeBadges = {
+  ach60: 60,
+  ach300: 300,
+  ach600: 600,
+  ach1800: 1800,
+  ach3600: 3600,
+  ach7200: 7200,
+  ach18000: 18000,
+  ach36000: 36000,
+  ach86400: 86400,
+  ach259200: 259200,
+  ach604800: 604800,
+  ach1209600: 1209600,
+  ach2592000: 2592000,
+  ach7776000: 7776000
+};
+
+function updateBadges() {
+  for (const id in timeBadges) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+
+    if (totalSeconds >= timeBadges[id]) {
+      el.classList.add("unlocked");
+
+      if (!el.innerHTML.includes("✔")) {
+        el.innerHTML += "<br>✔";
+      }
+    }
+  }
+}
+
+function toggleAch() {
+  document.getElementById("achPanel").classList.toggle("open");
+}
+
+setInterval(() => {
+  totalSeconds++;
+  localStorage.setItem("totalSeconds", totalSeconds);
+  updateBadges();
+}, 1000);
+
+/* DISPLAY TIME */
+let displaySec = 0;
+setInterval(() => {
+  displaySec++;
+  let mins = Math.floor(displaySec / 60);
+  let secs = displaySec % 60;
+  document.getElementById("timeSpent").innerText = `Time on site: ${mins}m ${secs}s`;
+}, 1000);
+
+/* ------------------------ LEVEL SYSTEM (unchanged) ------------------------ */
+const maxLevel = 100;
+const maxTotalExp = 55000;
+
+let exp = parseInt(localStorage.getItem("exp") || "0");
+let secondsLeft = parseInt(localStorage.getItem("secondsLeft") || "60");
+let usedCodes = JSON.parse(localStorage.getItem("usedCodes") || "{}");
+
+const codes5000 = ["teroswillrebirth"];
+const codes2500 = ["scarebaby","goonerbaby","creeplingbaby","babyiscoming","67","aurababybegoated","aurababywontdie"];
+const codes1000 = ["derrickistuff","danielistuff","mannyistuff","grantistuff","emmetistuff","shout-out-to-adonis"];
+const validCodes = [...codes5000, ...codes2500, ...codes1000].map(c => c.toLowerCase());
+
+const titleMap = {
+  1: "🧬 Sperm Cell", 5: "👶 Newborn", 10: "✨👶 Aurababy",
+  25: "🌾👶 Aurafarmer", 50: "🌌👶 The Celestial Baby",
+  75: "👼 Divine Baby", 100: "💫👶💫 The Baby That Holds Aura"
+};
+
+const rewards = {
+  25: "https://hianime.cx",
+  50: "https://npm.lat.cdn.cloudflare.net/",
+  75: "http://xcpugbjyjm.finxstudio.fi/",
+  100: "https://www.khanacademy.ink/"
+};
+
+const expTable = [0];
+let total = 0;
+for (let i = 1; i <= maxLevel; i++) {
+  const expForLevel = Math.floor(50 + Math.pow(i / maxLevel, 1.7) * 600);
+  total += expForLevel;
+  expTable.push(total);
+}
+const scale = maxTotalExp / expTable[maxLevel];
+for (let i = 1; i <= maxLevel; i++) expTable[i] = Math.floor(expTable[i] * scale);
+
+function clampToMaxExp(v) { return Math.min(v, expTable[maxLevel]); }
+function getLevelFromExp(x) {
+  for (let i = 1; i <= maxLevel; i++)
+    if (x < expTable[i]) return i - 1;
+  return maxLevel;
+}
+function getNextLevelExp(lv) {
+  return lv >= maxLevel ? expTable[maxLevel] : expTable[lv + 1];
+}
+function getTitle(level) {
+  let best = "🍼 None Yet";
+  for (const lvl in titleMap)
+    if (level >= lvl) best = titleMap[lvl];
+  return best;
+}
+function updateRewards() {
+  document.querySelectorAll("#rewardList li").forEach(li => {
+    const lvl = parseInt(li.dataset.level);
+    if (getLevelFromExp(exp) >= lvl)
+      li.innerHTML = `🎉 Level ${lvl} Reward: <a href="${rewards[lvl]}" target="_blank">Claim Here</a>`;
+  });
+}
+function updateCodeSection(isMaxed) {
+  const input = document.getElementById("codeInput");
+  const btn = document.getElementById("redeemBtn");
+  const msg = document.getElementById("codeMessage");
+  const section = document.getElementById("codeSection");
+
+  if (isMaxed) {
+    input.disabled = true;
+    btn.disabled = true;
+    section.classList.add("muted");
+    msg.innerText = "🏆 Max level reached!";
+  } else {
+    input.disabled = false;
+    btn.disabled = false;
+    section.classList.remove("muted");
+  }
+}
+
+/* LEVEL UP POPUP */
+let prevLevel = getLevelFromExp(exp);
+
+function showLevelUpPopup(lv) {
+  const popup = document.getElementById("levelUpPopup");
+  popup.innerText = `🎉 Level Up! You are now Level ${lv} 🎉`;
+  popup.style.opacity = 1;
+  setTimeout(() => popup.style.opacity = 0, 2500);
+}
+
+function updateUI() {
+  exp = clampToMaxExp(exp);
+  const level = getLevelFromExp(exp);
+  const prevExp = expTable[level];
+  const nextExp = getNextLevelExp(level);
+  const isMaxed = level >= maxLevel;
+
+  const percent = isMaxed ? 100 : ((exp - prevExp) / (nextExp - prevExp)) * 100;
+
+  document.getElementById("level").innerText = level;
+  document.getElementById("exp").innerText = exp;
+  document.getElementById("nextExp").innerText = nextExp;
+  document.getElementById("title").innerText = `🍼 Title: ${getTitle(level)}`;
+
+  const bar = document.getElementById("expBar");
+  bar.style.width = percent + "%";
+  bar.innerText = isMaxed ? "MAX" : Math.floor(percent) + "%";
+
+  const totalPercent = Math.floor((exp / expTable[maxLevel]) * 100);
+  document.querySelector(".exp-text").innerHTML =
+    `EXP: <span id="exp">${exp}</span> / <span id="nextExp">${expTable[maxLevel]}</span> (${totalPercent}% to Max)`;
+
+  updateRewards();
+  updateCodeSection(isMaxed);
+
+  if (level > prevLevel) showLevelUpPopup(level);
+  prevLevel = level;
+
+  localStorage.setItem("exp", exp);
+  localStorage.setItem("secondsLeft", secondsLeft);
+}
+
+function updateCountdownUI() {
+  const level = getLevelFromExp(exp);
+  const isMaxed = level >= maxLevel;
+  document.getElementById("countdown").innerText =
+    isMaxed ? "Next EXP in: — (Max Level)" : `Next EXP in: ${secondsLeft}s`;
+}
+
+/* EXP TIMER */
+setInterval(() => {
+  const level = getLevelFromExp(exp);
+  if (level >= maxLevel) {
+    secondsLeft = 0;
+    updateCountdownUI();
+    return;
+  }
+
+  secondsLeft--;
+  if (secondsLeft <= 0) {
+    exp = clampToMaxExp(exp + 100);
+    secondsLeft = 60;
+    updateUI();
+  }
+
+  updateCountdownUI();
+  localStorage.setItem("secondsLeft", secondsLeft);
+}, 1000);
+
+/* REDEEM CODES */
+function redeemCode() {
+  const codeInput = document.getElementById("codeInput").value.trim().toLowerCase();
+  const msg = document.getElementById("codeMessage");
+
+  if (getLevelFromExp(exp) >= maxLevel) {
+    msg.innerText = "🏆 You're max level already!";
+    return;
+  }
+
+  if (!codeInput) return;
+
+  if (!validCodes.includes(codeInput)) {
+    msg.innerText = "❌ Invalid code!";
+    return;
+  }
+
+  if (usedCodes[codeInput]) {
+    msg.innerText = "❌ Code already used!";
+    return;
+  }
+
+  let gainedExp = 0;
+  if (codes5000.includes(codeInput)) gainedExp = 5000;
+  else if (codes2500.includes(codeInput)) gainedExp = 2500;
+  else if (codes1000.includes(codeInput)) gainedExp = 1000;
+
+  const before = exp;
+  exp = clampToMaxExp(exp + gainedExp);
+  const actualGain = exp - before;
+
+  usedCodes[codeInput] = true;
+  localStorage.setItem("usedCodes", JSON.stringify(usedCodes));
+
+  updateUI();
+
+  msg.innerText =
+    actualGain > 0
+      ? `🎉 Code redeemed! +${actualGain} EXP 🎉`
+      : "🏆 You're already at max EXP!";
+}
+
+/* INIT */
+updateUI();
+updateCountdownUI();
+updateBadges();
+</script>
+</body>
+</html>
 
