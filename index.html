@@ -110,6 +110,25 @@ body {
   text-shadow: 0 0 10px white;
 }
 
+/* ACHIEVEMENT CLOSE BUTTON */
+#achClose {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  padding: 6px 10px;
+  background: #000000aa;
+  color: #ffffff;
+  border: 2px solid #ffffff88;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  z-index: 9500;
+}
+
+#achClose:hover {
+  background: #000000dd;
+}
+
 /* BADGE GRID */
 #badgeGrid {
   display: grid;
@@ -240,11 +259,12 @@ h1 { font-size: 2.5em; margin-top: 25px; color: #00c6ff; }
 <!-- TIMER -->
 <div id="timeSpent">Time on site: 0s</div>
 
-<!-- ACHIEVEMENTS BUTTON (no inline onclick anymore) -->
+<!-- ACHIEVEMENTS BUTTON -->
 <div id="achButton">🏆 Achievements</div>
 
 <!-- ACHIEVEMENT PANEL -->
 <div id="achPanel">
+  <button id="achClose">✖ Close</button>
   <h2>🏆 Time Badges</h2>
 
   <div id="badgeGrid">
@@ -378,11 +398,18 @@ h1 { font-size: 2.5em; margin-top: 25px; color: #00c6ff; }
 /* ------------------------ DOM + ACHIEVEMENT PANEL TOGGLE ------------------------ */
 document.addEventListener("DOMContentLoaded", () => {
   const achButton = document.getElementById("achButton");
-  const achPanel = document.getElementById("achPanel");
+  const achPanel  = document.getElementById("achPanel");
+  const achClose  = document.getElementById("achClose");
 
   if (achButton && achPanel) {
     achButton.addEventListener("click", () => {
       achPanel.classList.toggle("open");
+    });
+  }
+
+  if (achClose && achPanel) {
+    achClose.addEventListener("click", () => {
+      achPanel.classList.remove("open");
     });
   }
 });
