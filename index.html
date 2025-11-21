@@ -240,14 +240,15 @@ h1 { font-size: 2.5em; margin-top: 25px; color: #00c6ff; }
 <!-- TIMER -->
 <div id="timeSpent">Time on site: 0s</div>
 
-<!-- ACHIEVEMENTS BUTTON -->
-<div id="achButton" onclick="toggleAch()">🏆 Achievements</div>
+<!-- ACHIEVEMENTS BUTTON (no inline onclick anymore) -->
+<div id="achButton">🏆 Achievements</div>
 
 <!-- ACHIEVEMENT PANEL -->
 <div id="achPanel">
   <h2>🏆 Time Badges</h2>
 
   <div id="badgeGrid">
+
     <div id="ach60s" class="badge">
       ✨👶 Sparkling Newborn<br>
       <span>Stay for 1 minute — Rewards +100 EXP</span>
@@ -331,6 +332,7 @@ h1 { font-size: 2.5em; margin-top: 25px; color: #00c6ff; }
       <span>Stay for 3 months — Rewards +40,000 EXP</span>
       <button class="claimBtn" data-ach="7776000s">Claim</button>
     </div>
+
   </div>
 </div>
 
@@ -373,11 +375,17 @@ h1 { font-size: 2.5em; margin-top: 25px; color: #00c6ff; }
 <div id="levelUpPopup">🎉 Level Up! 🎉</div>
 
 <script>
-/* ------------------------ ACHIEVEMENT PANEL TOGGLE ------------------------ */
-function toggleAch() {
-  const panel = document.getElementById('achPanel');
-  panel.classList.toggle('open');
-}
+/* ------------------------ DOM + ACHIEVEMENT PANEL TOGGLE ------------------------ */
+document.addEventListener("DOMContentLoaded", () => {
+  const achButton = document.getElementById("achButton");
+  const achPanel = document.getElementById("achPanel");
+
+  if (achButton && achPanel) {
+    achButton.addEventListener("click", () => {
+      achPanel.classList.toggle("open");
+    });
+  }
+});
 
 /* ------------------------ BADGE SYSTEM ------------------------ */
 
@@ -430,17 +438,14 @@ function updateBadges() {
     const btn = badge.querySelector(".claimBtn");
     const ach = btn.dataset.ach;
 
-    // unlock requirement met
     if (totalSeconds >= timeRequirements[ach]) {
       badge.classList.add("unlocked");
-
       if (!claimedBadges[ach]) {
         btn.classList.remove("locked");
         btn.innerText = "Claim";
       }
     }
 
-    // already claimed
     if (claimedBadges[ach]) {
       btn.classList.add("claimed");
       btn.innerText = "Claimed ✔";
@@ -454,14 +459,12 @@ function setupClaimButtons() {
     const ach = btn.dataset.ach;
 
     btn.addEventListener("click", () => {
-      if (claimedBadges[ach]) return; // already claimed
-      if (totalSeconds < timeRequirements[ach]) return; // not unlocked
+      if (claimedBadges[ach]) return;
+      if (totalSeconds < timeRequirements[ach]) return;
 
-      // Add EXP
       exp = clampToMaxExp(exp + badgeRewards[ach]);
       updateUI();
 
-      // Mark as claimed
       claimedBadges[ach] = true;
       localStorage.setItem("claimedBadges", JSON.stringify(claimedBadges));
 
@@ -486,7 +489,6 @@ let displaySec = parseInt(localStorage.getItem("displaySec") || "0");
 
 function updateDisplayTime() {
   localStorage.setItem("displaySec", displaySec);
-
   let mins = Math.floor(displaySec / 60);
   let secs = displaySec % 60;
   document.getElementById("timeSpent").innerText = `Time on site: ${mins}m ${secs}s`;
