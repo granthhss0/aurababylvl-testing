@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Aurababy Leaderboards</title>
+<title>Aurababy Leaderboard</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@800&display=swap" rel="stylesheet">
 
@@ -22,219 +22,204 @@
     color: #00ffcc;
   }
 
-  /* Back button */
-  #backBtn {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    background: #00ffcc;
-    color: black;
-    padding: 10px 20px;
-    border-radius: 10px;
-    text-decoration: none;
-    box-shadow: 0 0 10px #00ffcc;
-  }
-  #backBtn:hover { background: #00eebb; }
-
-  /* Glass container */
   #leaderboardContainer {
     background: rgba(0,0,0,0.35);
     padding: 30px;
     border-radius: 15px;
-    max-width: 500px;
+    max-width: 550px;
     margin: 0 auto;
     font-weight: 800;
-    display: none;
   }
 
-  /* Username login card */
-  #loginCard {
-    background: rgba(0,0,0,0.35);
-    padding: 30px;
-    border-radius: 15px;
-    max-width: 500px;
-    margin: 0 auto 20px auto;
-  }
-
-  #loginCard input {
-    width: 80%;
-    padding: 12px;
-    border-radius: 10px;
+  input {
+    padding: 8px;
+    border-radius: 6px;
     border: none;
-    font-size: 1.1em;
+    margin: 5px 0;
+    width: 70%;
+    font-size: 1em;
   }
 
-  #loginBtn {
-    background: #00ffcc;
-    color: black;
-    padding: 10px 20px;
-    border-radius: 10px;
+  button {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
     cursor: pointer;
-    margin-top: 10px;
-    display: inline-block;
-  }
-  #loginBtn:hover { background: #00eebb; }
-
-  /* Tabs */
-  .tab-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-bottom: 25px;
+    margin-left: 5px;
+    font-weight: 800;
   }
 
-  .tab-btn {
-    background: #00ffcc;
-    color: black;
-    padding: 10px 18px;
+  #submitBtn { background: #00ffcc; color: black; }
+  #refreshBtn { background: #0072ff; color: white; }
+  #backBtn { background: #ff00aa; color: white; margin-top: 15px; }
+
+  .tabBtn {
+    background: black;
+    border: 2px solid #00ffcc;
+    color: #00ffcc;
+    padding: 8px 14px;
+    margin: 10px 5px;
     border-radius: 8px;
     cursor: pointer;
-    box-shadow: 0 0 10px #00ffcc;
-  }
-  .tab-btn:hover { background: #00e6b8; }
-
-  .tab {
-    display: none;
   }
 
-  /* Leaderboard rows */
-  .lb-row {
-    padding: 12px;
+  .tabBtn.active {
+    background: #00ffcc;
+    color: black;
+  }
+
+  #submitMsg {
+    margin-top: 8px;
+    font-size: 0.85em;
+    min-height: 20px;
+  }
+
+  #leaderboard div {
+    padding: 10px;
     border-bottom: 1px solid rgba(255,255,255,0.2);
     display: flex;
     justify-content: space-between;
-    font-size: 1.1em;
+    align-items: center;
+    font-size: 1.05em;
   }
 
-  .lb-row:nth-child(1) { background: rgba(255,255,255,0.15); border-left: 5px solid gold; }
-  .lb-row:nth-child(2) { background: rgba(255,255,255,0.1); border-left: 5px solid silver; }
-  .lb-row:nth-child(3) { background: rgba(255,255,255,0.1); border-left: 5px solid #cd7f32; }
+  #leaderboard div:nth-child(1) { background: rgba(255,255,255,0.15); border-left: 5px solid gold; }
+  #leaderboard div:nth-child(2) { background: rgba(255,255,255,0.1); border-left: 5px solid silver; }
+  #leaderboard div:nth-child(3) { background: rgba(255,255,255,0.1); border-left: 5px solid #cd7f32; }
 </style>
 </head>
 
 <body>
 
-<a id="backBtn" href="index.html">⬅ Back</a>
+<h1>🏆 Aurababy Leaderboard 🏆</h1>
 
-<h1>🏆 Aurababy Leaderboards 🏆</h1>
-
-<!-- USERNAME LOGIN -->
-<div id="loginCard">
-  <h2>Enter Your Username</h2>
-  <input type="text" id="usernameInput" placeholder="Username">
-  <div id="loginBtn">Enter</div>
-  <p id="loginMsg" style="margin-top:10px; color:#ff8080;"></p>
-</div>
-
-<!-- LEADERBOARDS -->
 <div id="leaderboardContainer">
 
+  <!-- LOGIN -->
+  <div>
+    <input type="text" id="usernameInput" placeholder="Enter your username">
+    <button id="submitBtn">Submit</button>
+  </div>
+  <div id="submitMsg"></div>
+
+  <!-- FILTER -->
+  <div>
+    <input type="text" id="filterInput" placeholder="Filter by username…">
+    <button id="refreshBtn">Refresh</button>
+  </div>
+
   <!-- TABS -->
-  <div class="tab-buttons">
-    <div class="tab-btn" onclick="switchTab('expTab')">EXP</div>
-    <div class="tab-btn" onclick="switchTab('timeTab')">TIME</div>
+  <div style="margin-top:15px;">
+    <button class="tabBtn active" id="expTab">EXP</button>
+    <button class="tabBtn" id="timeTab">TIME</button>
   </div>
 
-  <!-- EXP TAB -->
-  <div id="expTab" class="tab">
-    <h2>Top EXP</h2>
-    <div id="expBoard"></div>
-  </div>
+  <!-- LEADERBOARD DISPLAY -->
+  <div id="leaderboard" style="margin-top:20px;"></div>
 
-  <!-- TIME TAB -->
-  <div id="timeTab" class="tab">
-    <h2>Top Time</h2>
-    <div id="timeBoard"></div>
-  </div>
+  <!-- BACK BUTTON -->
+  <button id="backBtn" onclick="window.location.href='index.html'">⬅ Back to Level System</button>
+
 </div>
 
 <script>
-  function switchTab(tab) {
-    document.querySelectorAll(".tab").forEach(t => t.style.display = "none");
-    document.getElementById(tab).style.display = "block";
-  }
+  let leaderboard = JSON.parse(localStorage.getItem("localLeaderboard") || "[]");
+  let currentTab = "exp";
 
-  function niceNum(n) { return n.toLocaleString(); }
+  const usernameInput = document.getElementById("usernameInput");
+  const submitBtn = document.getElementById("submitBtn");
+  const submitMsg = document.getElementById("submitMsg");
+  const leaderboardEl = document.getElementById("leaderboard");
+  const filterInput = document.getElementById("filterInput");
 
-  function saveUserToBoards(username) {
-    let exp = parseInt(localStorage.getItem("exp") || "0");
-    let time = parseInt(localStorage.getItem("timePlayed") || "0");
+  const expTab = document.getElementById("expTab");
+  const timeTab = document.getElementById("timeTab");
 
-    let expLB = JSON.parse(localStorage.getItem("expLeaderboard") || "[]");
-    let timeLB = JSON.parse(localStorage.getItem("timeLeaderboard") || "[]");
+  function niceNum(n){ return n.toLocaleString(); }
+  function niceTime(t){ return (t || 0) + "s"; }
 
-    // EXP UPDATE
-    let existingExp = expLB.find(u => u.username === username);
-    if (existingExp) {
-      if (exp > existingExp.exp) existingExp.exp = exp;
-    } else {
-      expLB.push({ username, exp });
+  function renderLeaderboard() {
+    const filter = (filterInput.value || "").toLowerCase();
+    let data = leaderboard.slice();
+
+    if (filter) {
+      data = data.filter(u => u.username.toLowerCase().includes(filter));
     }
 
-    // TIME UPDATE
-    let existingTime = timeLB.find(u => u.username === username);
-    if (existingTime) {
-      if (time > existingTime.time) existingTime.time = time;
+    if (currentTab === "exp") {
+      data.sort((a,b) => b.exp - a.exp);
     } else {
-      timeLB.push({ username, time });
+      data.sort((a,b) => b.time - a.time);
     }
 
-    localStorage.setItem("expLeaderboard", JSON.stringify(expLB));
-    localStorage.setItem("timeLeaderboard", JSON.stringify(timeLB));
-  }
-
-  function loadBoards() {
-    let expLB = JSON.parse(localStorage.getItem("expLeaderboard") || "[]");
-    let timeLB = JSON.parse(localStorage.getItem("timeLeaderboard") || "[]");
-
-    expLB.sort((a,b)=>b.exp - a.exp);
-    timeLB.sort((a,b)=>b.time - a.time);
-
-    const expBoard = document.getElementById("expBoard");
-    const timeBoard = document.getElementById("timeBoard");
-
-    expBoard.innerHTML = "";
-    timeBoard.innerHTML = "";
+    leaderboardEl.innerHTML = "";
 
     for (let i = 0; i < 5; i++) {
-      let expRow = document.createElement("div");
-      expRow.className = "lb-row";
-      expRow.innerHTML = expLB[i]
-        ? `<strong>${i+1}. ${expLB[i].username}</strong> <span>${niceNum(expLB[i].exp)} EXP</span>`
-        : `<strong>${i+1}. ---</strong> <span>0 EXP</span>`;
-      expBoard.appendChild(expRow);
+      const div = document.createElement("div");
 
-      let timeRow = document.createElement("div");
-      timeRow.className = "lb-row";
-      timeRow.innerHTML = timeLB[i]
-        ? `<strong>${i+1}. ${timeLB[i].username}</strong> <span>${niceNum(timeLB[i].time)}s</span>`
-        : `<strong>${i+1}. ---</strong> <span>0s</span>`;
-      timeBoard.appendChild(timeRow);
+      if (i < data.length) {
+        const u = data[i];
+        div.innerHTML = `
+          <strong>${i+1}. ${u.username}</strong> 
+          <span>
+            ${niceNum(u.exp)} EXP • ${niceTime(u.time)}
+          </span>`;
+      } else {
+        div.innerHTML = `<strong>${i+1}. ---</strong> <span>0 EXP • 0s</span>`;
+      }
+
+      leaderboardEl.appendChild(div);
     }
   }
 
-  // LOGIN BUTTON
-  document.getElementById("loginBtn").onclick = () => {
-    const username = document.getElementById("usernameInput").value.trim();
-    const msg = document.getElementById("loginMsg");
-
-    if (username.length < 3 || username.length > 20) {
-      msg.textContent = "Username must be 3–20 characters.";
+  submitBtn.addEventListener("click", () => {
+    const name = usernameInput.value.trim();
+    if (!name || name.length < 3 || name.length > 20) {
+      submitMsg.innerText = "Username must be 3–20 characters.";
       return;
     }
 
-    msg.textContent = "";
+    const exp = parseInt(localStorage.getItem("exp") || "0");
+    const time = parseInt(localStorage.getItem("time") || "0");
 
-    // Save their progress into leaderboards
-    saveUserToBoards(username);
+    if (exp <= 0 && time <= 0) {
+      submitMsg.innerText = "You must earn EXP or TIME before submitting.";
+      return;
+    }
 
-    // Show leaderboard
-    document.getElementById("loginCard").style.display = "none";
-    document.getElementById("leaderboardContainer").style.display = "block";
+    let existing = leaderboard.find(u => u.username === name);
 
-    switchTab("expTab");
-    loadBoards();
+    if (existing) {
+      existing.exp = Math.max(existing.exp, exp);
+      existing.time = Math.max(existing.time, time);
+    } else {
+      leaderboard.push({username: name, exp: exp, time: time});
+    }
+
+    localStorage.setItem("localLeaderboard", JSON.stringify(leaderboard));
+
+    submitMsg.innerText = `Saved! EXP: ${niceNum(exp)}, Time: ${niceTime(time)}`;
+    renderLeaderboard();
+  });
+
+  document.getElementById("refreshBtn").addEventListener("click", renderLeaderboard);
+  filterInput.addEventListener("input", () => setTimeout(renderLeaderboard, 200));
+
+  expTab.onclick = () => {
+    currentTab = "exp";
+    expTab.classList.add("active");
+    timeTab.classList.remove("active");
+    renderLeaderboard();
   };
+
+  timeTab.onclick = () => {
+    currentTab = "time";
+    timeTab.classList.add("active");
+    expTab.classList.remove("active");
+    renderLeaderboard();
+  };
+
+  renderLeaderboard();
 </script>
 
 </body>
