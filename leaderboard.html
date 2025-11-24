@@ -2,161 +2,155 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Aurababy Online Leaderboard</title>
+<title>Aurababy Leaderboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@800&display=swap" rel="stylesheet">
 <style>
-body {
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(to bottom, #002b80, #0044cc, #0066ff);
-  color: white;
-  text-align: center;
-  padding: 50px 20px;
-}
-h1 { font-size:2.5em; color:#00ffcc; margin-bottom:20px; }
+  body {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800;
+    background: linear-gradient(to bottom, #002b80, #0044cc, #0066ff);
+    color: white;
+    text-align: center;
+    padding: 50px 20px;
+  }
 
-#leaderboardContainer {
-  background: rgba(0,0,0,0.35);
-  padding:30px;
-  border-radius:15px;
-  max-width:600px;
-  margin:0 auto;
-}
+  h1 { font-size: 2.5em; color: #00ffcc; margin-bottom: 20px; }
 
-input { padding:8px; border-radius:6px; border:none; margin:5px 0; width:70%; font-size:1em; }
-button { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; margin-left:5px; font-weight:800; }
-#submitBtn{background:#00ffcc;color:black;}
-.tabBtn{background:black;border:2px solid #00ffcc;color:#00ffcc;padding:8px 14px;margin:10px 5px;border-radius:8px;cursor:pointer;}
-.tabBtn.active{background:#00ffcc;color:black;}
-#leaderboard div{padding:10px;border-bottom:1px solid rgba(255,255,255,0.2);display:flex;justify-content:space-between;align-items:center;font-size:1.05em;}
-#submitMsg{margin-top:8px;font-size:0.85em;min-height:20px;}
+  #container {
+    background: rgba(0,0,0,0.35);
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  input { padding: 8px; border-radius: 6px; border: none; width: 70%; font-size: 1em; }
+  button { padding: 8px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 800; margin-left:5px; }
+
+  #submitBtn { background: #00ffcc; color: black; }
+  #updateBtn { background: #0072ff; color: white; margin-top: 10px; }
+  #backBtn { background: #ff00aa; color: white; margin-top: 15px; }
+
+  #leaderboard div {
+    padding: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.05em;
+  }
+
+  #leaderboard div:nth-child(1) { border-left: 5px solid gold; background: rgba(255,255,255,0.15); }
+  #leaderboard div:nth-child(2) { border-left: 5px solid silver; background: rgba(255,255,255,0.1); }
+  #leaderboard div:nth-child(3) { border-left: 5px solid #cd7f32; background: rgba(255,255,255,0.1); }
 </style>
 </head>
-<body>
 
-<h1>📊 Aurababy Leaderboard 📊</h1>
-<div id="leaderboardContainer">
+<body>
+<h1>🏆 Aurababy Leaderboard 🏆</h1>
+<div id="container">
+
   <div>
     <input type="text" id="usernameInput" placeholder="Enter your username">
     <button id="submitBtn">Submit</button>
   </div>
-  <div id="submitMsg"></div>
+  <div id="message" style="margin-top:10px; min-height:20px;"></div>
 
-  <div style="margin-top:15px;">
-    <button class="tabBtn active" id="expTab">EXP</button>
-    <button class="tabBtn" id="timeTab">Time</button>
-  </div>
-
-  <div style="margin-top:15px;">
-    <input type="text" id="filterInput" placeholder="Filter by username…">
-  </div>
+  <button id="updateBtn">Check EXP</button>
 
   <div id="leaderboard" style="margin-top:20px;"></div>
+
+  <button id="backBtn" onclick="window.location.href='index.html'">⬅ Back to Game</button>
 </div>
 
 <script>
-const leaderboardEl = document.getElementById("leaderboard");
+const apiBase = "https://leaderboardbackend-7cum.onrender.com";
+let username = sessionStorage.getItem("aurababyUsername") || null;
+
+// DOM elements
 const usernameInput = document.getElementById("usernameInput");
 const submitBtn = document.getElementById("submitBtn");
-const submitMsg = document.getElementById("submitMsg");
-const filterInput = document.getElementById("filterInput");
-const expTab = document.getElementById("expTab");
-const timeTab = document.getElementById("timeTab");
+const message = document.getElementById("message");
+const leaderboardEl = document.getElementById("leaderboard");
+const updateBtn = document.getElementById("updateBtn");
 
-let currentTab = "exp";
+// Lock username if already stored
+if (username) {
+  usernameInput.value = username;
+  usernameInput.disabled = true;
+  submitBtn.disabled = true;
+  message.innerText = `Logged in as ${username}`;
+}
 
-// Helpers
-function niceNum(n){ return n.toLocaleString(); }
-function niceTime(t){ return (t||0) + "s"; }
+// Submit username
+submitBtn.onclick = () => {
+  const name = usernameInput.value.trim();
+  if (!name || name.length < 3 || name.length > 20) {
+    message.innerText = "Username must be 3–20 characters.";
+    return;
+  }
+  username = name;
+  sessionStorage.setItem("aurababyUsername", username);
+  usernameInput.disabled = true;
+  submitBtn.disabled = true;
+  message.innerText = `Logged in as ${username}`;
+  updateLeaderboard();
+};
 
+// Fetch leaderboard
 async function fetchLeaderboard() {
   try {
-    const res = await fetch("https://leaderboardbackend-7cum.onrender.com/leaderboard");
-    if (!res.ok) throw new Error("Failed to fetch leaderboard");
+    const res = await fetch(`${apiBase}/leaderboard`);
+    if (!res.ok) throw new Error("Failed to fetch");
     const data = await res.json();
     return data;
-  } catch(e) {
-    console.error(e);
+  } catch (err) {
+    console.error(err);
     return [];
   }
 }
 
-async function submitScore() {
-  const username = usernameInput.value.trim();
-  if (!username || username.length < 3 || username.length > 20) {
-    submitMsg.innerText = "Username must be 3–20 characters.";
-    return;
-  }
-
+// Submit current user EXP to backend
+async function submitEXP() {
+  if (!username) return;
   const exp = parseInt(localStorage.getItem("exp") || "0");
-  const time = parseInt(localStorage.getItem("totalSeconds") || "0");
-
-  if (exp <=0 && time <=0) {
-    submitMsg.innerText = "You must earn EXP or TIME before submitting.";
-    return;
-  }
-
   try {
-    const res = await fetch("https://leaderboardbackend-7cum.onrender.com/submit", {
+    await fetch(`${apiBase}/submit`, {
       method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ username, exp, time })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, exp })
     });
-    const data = await res.json();
-    if (data.success) {
-      submitMsg.innerText = `Saved! EXP: ${niceNum(exp)}, Time: ${niceTime(time)}`;
-      renderLeaderboard();
-    } else {
-      submitMsg.innerText = "Error submitting score.";
-    }
-  } catch(e) {
-    console.error(e);
-    submitMsg.innerText = "Failed to submit score.";
+  } catch(err) {
+    console.error(err);
   }
 }
 
-async function renderLeaderboard() {
+// Render top 5
+async function updateLeaderboard() {
+  if (!username) return;
+
+  await submitEXP();
+
   let data = await fetchLeaderboard();
-  const filter = (filterInput.value||"").toLowerCase();
-  if (filter) data = data.filter(u => u.username.toLowerCase().includes(filter));
-  if (currentTab === "exp") data.sort((a,b)=>b.exp-a.exp);
-  else data.sort((a,b)=>b.time-b.time);
+  data.sort((a,b) => b.exp - a.exp);
 
   leaderboardEl.innerHTML = "";
-  for(let i=0;i<5;i++){
+  for (let i=0; i<5; i++) {
     const div = document.createElement("div");
-    if(i<data.length){
+    if (i < data.length) {
       const u = data[i];
-      div.innerHTML = `<strong>${i+1}. ${u.username}</strong> <span>${niceNum(u.exp)} EXP • ${niceTime(u.time)}</span>`;
+      div.innerHTML = `<strong>${i+1}. ${u.username}</strong> <span>${u.exp} EXP</span>`;
     } else {
-      div.innerHTML = `<strong>${i+1}. ---</strong> <span>0 EXP • 0s</span>`;
+      div.innerHTML = `<strong>${i+1}. ---</strong> <span>0 EXP</span>`;
     }
     leaderboardEl.appendChild(div);
   }
 }
 
-// Event listeners
-submitBtn.addEventListener("click", submitScore);
-filterInput.addEventListener("input", ()=>setTimeout(renderLeaderboard,200));
+// Update button
+updateBtn.onclick = updateLeaderboard;
 
-expTab.onclick = ()=>{
-  currentTab="exp";
-  expTab.classList.add("active");
-  timeTab.classList.remove("active");
-  renderLeaderboard();
-};
-timeTab.onclick = ()=>{
-  currentTab="time";
-  timeTab.classList.add("active");
-  expTab.classList.remove("active");
-  renderLeaderboard();
-};
-
-// Auto-refresh every 5s
-setInterval(renderLeaderboard,5000);
-
-// Initial render
-renderLeaderboard();
+// Auto-refresh every 10s
+setInterval(updateLeaderboard, 10000);
 </script>
-
 </body>
 </html>
