@@ -315,44 +315,62 @@ h1 { font-size: 2.5em; margin-top: 25px; color: #00c6ff; }
 
     <div id="ach3600s" class="badge">
       🕰👶 Hour-Born Baby<br>
-      <span>Stay for 1 hour — Rewards +625 EXP</span>
+      <span>Stay for 1 hour — Rewards +600 EXP</span>
       <button class="claimBtn" data-ach="3600s">Claim</button>
     </div>
 
     <div id="ach7200s" class="badge">
       💠👶 Double-Hour Crystal Baby<br>
-      <span>Stay for 2 hours — Rewards +1250 EXP</span>
+      <span>Stay for 2 hours — Rewards +800 EXP</span>
       <button class="claimBtn" data-ach="7200s">Claim</button>
     </div>
 
     <div id="ach18000s" class="badge">
       🔮👶 Arcane Time Infant<br>
-      <span>Stay for 5 hours — Rewards +2500 EXP</span>
+      <span>Stay for 5 hours — Rewards +1200 EXP</span>
       <button class="claimBtn" data-ach="18000s">Claim</button>
     </div>
 
     <div id="ach36000s" class="badge">
       🌌👶 Cosmic Time Baby<br>
-      <span>Stay for 12 hours — Rewards +5000 EXP</span>
+      <span>Stay for 10 hours — Rewards +1800 EXP</span>
       <button class="claimBtn" data-ach="36000s">Claim</button>
     </div>
 
     <div id="ach86400s" class="badge">
       🪽👶 Daylight Aura Child<br>
-      <span>Stay for 1 day — Rewards +10000 EXP</span>
-      <button class="claimBtn" data-ach="86400s">Claim</button>
-    </div>
-
-      <div id="ach86400s" class="badge">
-      🪽👶 Daylight Aura Child<br>
-      <span>Stay for 2 day — Rewards +25000 EXP</span>
+      <span>Stay for 1 day — Rewards +2500 EXP</span>
       <button class="claimBtn" data-ach="86400s">Claim</button>
     </div>
 
     <div id="ach259200s" class="badge">
       🌅👶 Triple-Dawn Baby<br>
-      <span>Stay for 3 days — Rewards +50000 EXP</span>
+      <span>Stay for 3 days — Rewards +4000 EXP</span>
       <button class="claimBtn" data-ach="259200s">Claim</button>
+    </div>
+
+    <div id="ach604800s" class="badge">
+      🪐👶 Weekborn Star Baby<br>
+      <span>Stay for 1 week — Rewards +8000 EXP</span>
+      <button class="claimBtn" data-ach="604800s">Claim</button>
+    </div>
+
+    <div id="ach1209600s" class="badge">
+      🌠👶 Duo-Comet Baby<br>
+      <span>Stay for 2 weeks — Rewards +12,000 EXP</span>
+      <button class="claimBtn" data-ach="1209600s">Claim</button>
+    </div>
+
+    <div id="ach2592000s" class="badge">
+      🌀👶 Chrono Aura Baby<br>
+      <span>Stay for 1 month — Rewards +20,000 EXP</span>
+      <button class="claimBtn" data-ach="2592000s">Claim</button>
+    </div>
+
+    <div id="ach7776000s" class="badge">
+      🌟👶 Eternity-Touched Baby<br>
+      <span>Stay for 3 months — Rewards +40,000 EXP</span>
+      <button class="claimBtn" data-ach="7776000s">Claim</button>
     </div>
 
   </div>
@@ -400,148 +418,120 @@ h1 { font-size: 2.5em; margin-top: 25px; color: #00c6ff; }
 
 <script>
 /* ------------------------ DOM + ACHIEVEMENT PANEL TOGGLE ------------------------ */
-document.addEventListener('DOMContentLoaded', () => {
-    // --- Global Variables & Constants ---
-    let totalExp = parseInt(localStorage.getItem('totalExp')) || 0;
-    let timeSpent = parseInt(localStorage.getItem('timeSpent')) || 0;
-    let level = parseInt(localStorage.getItem('level')) || 1;
-    const ACHIEVEMENTS = {
-        '60s': { exp: 100, claimed: JSON.parse(localStorage.getItem('ach60s_claimed')) || false },
-        '300s': { exp: 150, claimed: JSON.parse(localStorage.getItem('ach300s_claimed')) || false },
-        '600s': { exp: 250, claimed: JSON.parse(localStorage.getItem('ach600s_claimed')) || false },
-        '1800s': { exp: 400, claimed: JSON.parse(localStorage.getItem('ach1800s_claimed')) || false },
-        '3600s': { exp: 625, claimed: JSON.parse(localStorage.getItem('ach3600s_claimed')) || false },
-        '7200s': { exp: 1250, claimed: JSON.parse(localStorage.getItem('ach7200s_claimed')) || false },
-        '18000s': { exp: 2500, claimed: JSON.parse(localStorage.getItem('ach18000s_claimed')) || false },
-        '36000s': { exp: 5000, claimed: JSON.parse(localStorage.getItem('ach36000s_claimed')) || false },
-        '86400s': { exp: 10000, claimed: JSON.parse(localStorage.getItem('ach86400s_claimed')) || false },
-        '259200s': { exp: 50000, claimed: JSON.parse(localStorage.getItem('ach259200s_claimed')) || false }
-    };
+document.addEventListener("DOMContentLoaded", () => {
+  const achButton = document.getElementById("achButton");
+  const achPanel  = document.getElementById("achPanel");
+  const achClose  = document.getElementById("achClose");
 
-    // --- DOM Elements ---
-    const progressBar = document.querySelector('.progress-bar');
-    const expText = document.querySelector('.exp-text');
-    const levelInfo = document.querySelector('.level-info');
-    const timeSpentEl = document.getElementById('timeSpent');
-    const achButton = document.getElementById('achButton');
-    const achPanel = document.getElementById('achPanel');
-    const achClose = document.getElementById('achClose');
-    const badgeGrid = document.getElementById('badgeGrid');
+  if (achButton && achPanel) {
+    achButton.addEventListener("click", () => {
+      achPanel.classList.toggle("open");
+    });
+  }
 
-    // --- Helper Functions ---
-
-    // Calculate EXP required for a specific level
-    function getExpRequiredForLevel(lvl) {
-        return Math.floor(100 * (lvl - 1) + 100 * Math.pow(1.5, lvl - 1));
-    }
-
-    // Update UI elements based on current level and experience
-    function updateUI() {
-        let requiredExp = getExpRequiredForLevel(level);
-        while (totalExp >= requiredExp) {
-            totalExp -= requiredExp;
-            level++;
-            requiredExp = getExpRequiredForLevel(level);
-        }
-
-        const currentExp = totalExp;
-        const percent = (currentExp / requiredExp) * 100;
-
-        // Update DOM elements
-        if (progressBar) progressBar.style.width = percent.toFixed(2) + '%';
-        if (expText) expText.textContent = `EXP: ${currentExp.toLocaleString()} / ${requiredExp.toLocaleString()}`;
-        if (levelInfo) levelInfo.textContent = `Level: ${level}`;
-        if (timeSpentEl) timeSpentEl.textContent = `Time on site: ${timeSpent}s`;
-
-        // Save progress to localStorage
-        localStorage.setItem('totalExp', totalExp);
-        localStorage.setItem('level', level);
-        localStorage.setItem('timeSpent', timeSpent);
-    }
-
-    // Claims an achievement and awards EXP
-    function claimAchievement(achievementId) {
-        if (!ACHIEVEMENTS[achievementId]) return;
-
-        const ach = ACHIEVEMENTS[achievementId];
-        const requiredTime = parseInt(achievementId.replace('s', ''));
-
-        // Check if conditions are met and not already claimed
-        if (timeSpent >= requiredTime && !ach.claimed) {
-            totalExp += ach.exp;
-            ach.claimed = true;
-            localStorage.setItem(`ach${achievementId}_claimed`, true);
-            updateUI();
-            updateBadgeUI(achievementId);
-            console.log(`Claimed achievement ${achievementId}, awarded ${ach.exp} EXP.`);
-        }
-    }
-
-    // Updates the visual state of a single badge
-    function updateBadgeUI(achievementId) {
-        const badgeEl = document.getElementById(`ach${achievementId}`);
-        const claimBtn = badgeEl ? badgeEl.querySelector('.claimBtn') : null;
-
-        if (!badgeEl || !claimBtn) return;
-
-        if (ACHIEVEMENTS[achievementId].claimed) {
-            badgeEl.classList.add('unlocked');
-            claimBtn.textContent = 'Claimed!';
-            claimBtn.classList.add('claimed');
-            claimBtn.disabled = true;
-        } else if (timeSpent >= parseInt(achievementId.replace('s', ''))) {
-            claimBtn.textContent = 'Claim';
-            claimBtn.classList.remove('locked', 'claimed');
-            claimBtn.disabled = false;
-        } else {
-            claimBtn.textContent = 'Claim';
-            claimBtn.classList.add('locked');
-            claimBtn.disabled = true;
-        }
-    }
-
-    // Update all badges on initial load or time update
-    function updateAllBadgesUI() {
-        Object.keys(ACHIEVEMENTS).forEach(updateBadgeUI);
-    }
-
-    // --- Event Listeners & Initialization ---
-
-    // Timer logic
-    setInterval(() => {
-        timeSpent++;
-        localStorage.setItem('timeSpent', timeSpent);
-        if (timeSpentEl) timeSpentEl.textContent = `Time on site: ${timeSpent}s`;
-        updateAllBadgesUI(); // Check badge eligibility every second
-    }, 1000);
-
-    // Achievements panel logic
-    if (achButton) {
-        achButton.addEventListener('click', () => {
-            if (achPanel) achPanel.classList.add('open');
-        });
-    }
-
-    if (achClose) {
-        achClose.addEventListener('click', () => {
-            if (achPanel) achPanel.classList.remove('open');
-        });
-    }
-
-    // Add event listeners for all claim buttons using event delegation
-    if (badgeGrid) {
-        badgeGrid.addEventListener('click', (e) => {
-            if (e.target && e.target.classList.contains('claimBtn')) {
-                const achId = e.target.dataset.ach;
-                claimAchievement(achId);
-            }
-        });
-    }
-
-    // Initial updates on load
-    updateUI();
-    updateAllBadgesUI();
+  if (achClose && achPanel) {
+    achClose.addEventListener("click", () => {
+      achPanel.classList.remove("open");
+    });
+  }
 });
+
+/* ------------------------ BADGE SYSTEM ------------------------ */
+
+/* ------------------------ TIME BADGES + CLAIM SYSTEM ------------------------ */
+
+let totalSeconds = parseInt(localStorage.getItem("totalSeconds") || "0");
+
+/* Time requirements */
+const timeRequirements = {
+  "60s": 60,
+  "300s": 300,
+  "600s": 600,
+  "1800s": 1800,
+  "3600s": 3600,
+  "7200s": 7200,
+  "18000s": 18000,
+  "36000s": 36000,
+  "86400s": 86400,
+  "259200s": 259200,
+  "604800s": 604800,
+  "1209600s": 1209600,
+  "2592000s": 2592000,
+  "7776000s": 7776000
+};
+
+/* EXP rewards */
+const badgeRewards = {
+  "60s": 100,
+  "300s": 150,
+  "600s": 250,
+  "1800s": 400,
+  "3600s": 600,
+  "7200s": 800,
+  "18000s": 1200,
+  "36000s": 1800,
+  "86400s": 2500,
+  "259200s": 4000,
+  "604800s": 8000,
+  "1209600s": 12000,
+  "2592000s": 20000,
+  "7776000s": 40000
+};
+
+/* Load claimed badges */
+let claimedBadges = JSON.parse(localStorage.getItem("claimedBadges") || "{}");
+
+/* Unlock badges visually */
+function updateBadges() {
+  document.querySelectorAll(".badge").forEach(badge => {
+    const btn = badge.querySelector(".claimBtn");
+    const ach = btn.dataset.ach;
+
+    if (totalSeconds >= timeRequirements[ach]) {
+      badge.classList.add("unlocked");
+      if (!claimedBadges[ach]) {
+        btn.classList.remove("locked");
+        btn.innerText = "Claim";
+      }
+    }
+
+    if (claimedBadges[ach]) {
+      btn.classList.add("claimed");
+      btn.innerText = "Claimed ✔";
+    }
+  });
+}
+
+/* Claim handler */
+function setupClaimButtons() {
+  document.querySelectorAll(".claimBtn").forEach(btn => {
+    const ach = btn.dataset.ach;
+
+    btn.addEventListener("click", () => {
+      if (claimedBadges[ach]) return;
+      if (totalSeconds < timeRequirements[ach]) return;
+
+      exp = clampToMaxExp(exp + badgeRewards[ach]);
+      updateUI();
+
+      claimedBadges[ach] = true;
+      localStorage.setItem("claimedBadges", JSON.stringify(claimedBadges));
+
+      btn.classList.add("claimed");
+      btn.innerText = "Claimed ✔";
+    });
+  });
+}
+
+/* Timer for totalSeconds and badge unlock */
+setInterval(() => {
+  totalSeconds++;
+  localStorage.setItem("totalSeconds", totalSeconds);
+  updateBadges();
+}, 1000);
+
+setupClaimButtons();
+updateBadges();
 
 /* DISPLAY TIME THAT SAVES */
 let displaySec = parseInt(localStorage.getItem("displaySec") || "0");
@@ -568,8 +558,8 @@ let exp = parseInt(localStorage.getItem("exp") || "0");
 let secondsLeft = parseInt(localStorage.getItem("secondsLeft") || "60");
 let usedCodes = JSON.parse(localStorage.getItem("usedCodes") || "{}");
 
-const codes5000 = ["300gamesbaby"];
-const codes2500 = ["goonerbaby","jollybaby","67","aurababybegoated"];
+const codes5000 = ["teroswillrebirth"];
+const codes2500 = ["scarebaby","goonerbaby","creeplingbaby","babyiscoming","67","aurababybegoated","aurababywontdie"];
 const codes1000 = ["derrickistuff","danielistuff","mannyistuff","grantistuff","emmetistuff","shout-out-to-adonis"];
 const validCodes = [...codes5000, ...codes2500, ...codes1000].map(c => c.toLowerCase());
 
